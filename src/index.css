@@ -2,95 +2,112 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* MAAV — Fintech design system. All colors HSL. */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 210 20% 98%;
+    --foreground: 222 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 222 25% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* MAAV brand: deep indigo trust */
+    --primary: 232 64% 32%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 232 70% 55%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 15% 96%;
+    --secondary-foreground: 222 25% 12%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 232 64% 96%;
+    --accent-foreground: 232 64% 32%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Status / health indicators */
+    --success: 152 60% 38%;
+    --success-foreground: 0 0% 100%;
+    --success-soft: 152 55% 94%;
 
-    --radius: 0.5rem;
+    --warning: 38 92% 50%;
+    --warning-foreground: 30 50% 12%;
+    --warning-soft: 45 95% 94%;
+
+    --danger: 0 75% 55%;
+    --danger-foreground: 0 0% 100%;
+    --danger-soft: 0 80% 96%;
+
+    --info: 210 90% 50%;
+    --info-soft: 210 95% 96%;
+
+    --border: 220 15% 90%;
+    --input: 220 15% 90%;
+    --ring: 232 64% 32%;
+
+    --radius: 0.875rem;
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(232 70% 55% / 0.08), hsl(210 90% 60% / 0.06) 60%, transparent);
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-score-good: linear-gradient(135deg, hsl(152 60% 42%), hsl(165 65% 48%));
+    --gradient-score-mid: linear-gradient(135deg, hsl(38 92% 52%), hsl(28 92% 55%));
+    --gradient-score-bad: linear-gradient(135deg, hsl(0 75% 55%), hsl(350 75% 55%));
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(222 25% 12% / 0.04);
+    --shadow-card: 0 1px 3px hsl(222 25% 12% / 0.04), 0 1px 2px hsl(222 25% 12% / 0.03);
+    --shadow-elevated: 0 10px 30px -12px hsl(232 64% 32% / 0.18);
+    --shadow-glow: 0 0 0 8px hsl(232 70% 55% / 0.08);
+
+    --transition-base: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 222 30% 7%;
+    --foreground: 210 30% 96%;
+    --card: 222 28% 10%;
+    --card-foreground: 210 30% 96%;
+    --popover: 222 28% 10%;
+    --popover-foreground: 210 30% 96%;
+    --primary: 232 70% 65%;
+    --primary-foreground: 222 30% 7%;
+    --primary-glow: 232 80% 70%;
+    --secondary: 222 22% 16%;
+    --secondary-foreground: 210 30% 96%;
+    --muted: 222 22% 16%;
+    --muted-foreground: 220 12% 65%;
+    --accent: 232 40% 20%;
+    --accent-foreground: 232 70% 80%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 55% 48%;
+    --success-soft: 152 30% 16%;
+    --warning: 38 92% 55%;
+    --warning-soft: 38 30% 16%;
+    --danger: 0 70% 55%;
+    --danger-soft: 0 35% 18%;
+    --info: 210 90% 60%;
+    --info-soft: 210 35% 18%;
+    --border: 222 20% 18%;
+    --input: 222 20% 18%;
+    --ring: 232 70% 65%;
   }
 }
 
@@ -98,8 +115,46 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01", "ss03";
   }
 }
+
+@layer utilities {
+  .gradient-hero { background: var(--gradient-hero); }
+  .gradient-primary { background: var(--gradient-primary); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-elevated { box-shadow: var(--shadow-elevated); }
+  .shadow-glow { box-shadow: var(--shadow-glow); }
+  .transition-base { transition: var(--transition-base); }
+
+  .ring-dashed {
+    background:
+      conic-gradient(from 0deg, hsl(var(--border)) 0 100%);
+  }
+}
+
+@keyframes float-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.35); }
+  70% { box-shadow: 0 0 0 16px hsl(var(--primary) / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
+}
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+@keyframes draw-score {
+  from { stroke-dashoffset: 360; }
+}
+
+.animate-float-up { animation: float-up 0.4s ease-out both; }
+.animate-pulse-ring { animation: pulse-ring 2s infinite; }
