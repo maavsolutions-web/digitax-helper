@@ -92,10 +92,14 @@ const CaLogin = () => {
 
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Maav Mitra</p>
           <h1 className="mt-1 font-display text-2xl font-bold tracking-tight">
-            {mode === "signin" ? "CA sign in" : "Create your CA workspace"}
+            {mode === "signin" ? "CA sign in" : mode === "signup" ? "Create your CA workspace" : "Reset your password"}
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            {mode === "signin" ? "Access your client pipeline." : "Manage clients, reviews, and filings."}
+            {mode === "signin"
+              ? "Access your client pipeline."
+              : mode === "signup"
+              ? "Manage clients, reviews, and filings."
+              : "Enter your email and we'll send you a reset link."}
           </p>
 
           <div className="mt-6 space-y-3">
@@ -115,20 +119,31 @@ const CaLogin = () => {
             <Field label="Email">
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@firm.com" />
             </Field>
-            <Field label="Password">
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-            </Field>
+            {mode !== "reset" && (
+              <Field label="Password">
+                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+              </Field>
+            )}
           </div>
 
           <Button onClick={handle} disabled={loading} variant="hero" size="lg" className="mt-6 w-full">
-            {loading ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"} <ArrowRight />
+            {loading ? "Please wait..." : mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"} <ArrowRight />
           </Button>
+
+          {mode === "signin" && (
+            <button
+              onClick={() => setMode("reset")}
+              className="mt-3 block w-full text-center text-xs text-muted-foreground hover:text-foreground"
+            >
+              Forgot password?
+            </button>
+          )}
 
           <button
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
             className="mt-4 block w-full text-center text-xs text-muted-foreground hover:text-foreground"
           >
-            {mode === "signin" ? "New to Maav Mitra? " : "Already have an account? "}
+            {mode === "signin" ? "New to Maav Mitra? " : mode === "signup" ? "Already have an account? " : "Remembered it? "}
             <span className="font-medium text-primary">
               {mode === "signin" ? "Create account" : "Sign in"}
             </span>
