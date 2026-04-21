@@ -31,20 +31,20 @@ const CaLogin = () => {
           return;
         }
         const redirectUrl = `${window.location.origin}/mitra`;
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: redirectUrl,
-            data: { full_name: name, firm_name: firm, phone },
+            data: { full_name: name, firm_name: firm, phone, role: "ca" },
           },
         });
         if (error) throw error;
-        if (data.user) {
-          const { error: roleErr } = await supabase
-            .from("user_roles")
-            .insert({ user_id: data.user.id, role: "ca" });
-          if (roleErr && !roleErr.message.includes("duplicate")) throw roleErr;
+        // Auto-confirm is on, so a session should exist. If not, sign in.
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData.session) {
+          const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+          if (signInErr) throw signInErr;
         }
         toast.success("Welcome to Maav Mitra");
         navigate("/mitra");
