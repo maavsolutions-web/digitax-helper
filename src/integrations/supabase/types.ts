@@ -14,16 +14,250 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clients: {
+        Row: {
+          ca_id: string
+          created_at: string
+          full_name: string
+          health_score: number | null
+          id: string
+          income_type: string | null
+          last_activity_at: string
+          pan: string | null
+          risk: Database["public"]["Enums"]["risk_level"]
+          source_user_id: string | null
+          stage: Database["public"]["Enums"]["pipeline_stage"]
+        }
+        Insert: {
+          ca_id: string
+          created_at?: string
+          full_name: string
+          health_score?: number | null
+          id?: string
+          income_type?: string | null
+          last_activity_at?: string
+          pan?: string | null
+          risk?: Database["public"]["Enums"]["risk_level"]
+          source_user_id?: string | null
+          stage?: Database["public"]["Enums"]["pipeline_stage"]
+        }
+        Update: {
+          ca_id?: string
+          created_at?: string
+          full_name?: string
+          health_score?: number | null
+          id?: string
+          income_type?: string | null
+          last_activity_at?: string
+          pan?: string | null
+          risk?: Database["public"]["Enums"]["risk_level"]
+          source_user_id?: string | null
+          stage?: Database["public"]["Enums"]["pipeline_stage"]
+        }
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          doc_type: Database["public"]["Enums"]["document_type"]
+          file_name: string
+          file_path: string | null
+          id: string
+          owner_user_id: string
+          size_bytes: number | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          doc_type: Database["public"]["Enums"]["document_type"]
+          file_name: string
+          file_path?: string | null
+          id?: string
+          owner_user_id: string
+          size_bytes?: number | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          doc_type?: Database["public"]["Enums"]["document_type"]
+          file_name?: string
+          file_path?: string | null
+          id?: string
+          owner_user_id?: string
+          size_bytes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notes: {
+        Row: {
+          body: string
+          ca_id: string
+          client_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          body: string
+          ca_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          body?: string
+          ca_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          firm_name: string | null
+          full_name: string | null
+          id: string
+          income_type: string | null
+          pan: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          firm_name?: string | null
+          full_name?: string | null
+          id: string
+          income_type?: string | null
+          pan?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          firm_name?: string | null
+          full_name?: string | null
+          id?: string
+          income_type?: string | null
+          pan?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          health_score: number
+          id: string
+          key_issues: Json
+          owner_user_id: string
+          payable_amount: number | null
+          refund_amount: number | null
+          risk_alerts: Json
+          savings: Json
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          health_score: number
+          id?: string
+          key_issues?: Json
+          owner_user_id: string
+          payable_amount?: number | null
+          refund_amount?: number | null
+          risk_alerts?: Json
+          savings?: Json
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          health_score?: number
+          id?: string
+          key_issues?: Json
+          owner_user_id?: string
+          payable_amount?: number | null
+          refund_amount?: number | null
+          risk_alerts?: Json
+          savings?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "individual" | "ca"
+      document_type:
+        | "form_26as"
+        | "ais"
+        | "form_16"
+        | "investment_proof"
+        | "other"
+      pipeline_stage:
+        | "docs_pending"
+        | "processing"
+        | "ready_for_review"
+        | "awaiting_approval"
+        | "filed"
+      risk_level: "low" | "medium" | "high"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +384,23 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["individual", "ca"],
+      document_type: [
+        "form_26as",
+        "ais",
+        "form_16",
+        "investment_proof",
+        "other",
+      ],
+      pipeline_stage: [
+        "docs_pending",
+        "processing",
+        "ready_for_review",
+        "awaiting_approval",
+        "filed",
+      ],
+      risk_level: ["low", "medium", "high"],
+    },
   },
 } as const
