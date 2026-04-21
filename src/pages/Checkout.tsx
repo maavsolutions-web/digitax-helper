@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { TopBar } from "@/components/TopBar";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,8 +13,71 @@ import {
   Star,
   Users,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const Checkout = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [cas, setCas] = useState<any[]>([]);
+  const [selectedCa, setSelectedCa] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    // List of CAs the user can choose from. We list profiles whose user has the 'ca' role.
+    const load = async () => {
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "ca");
+      const ids = (roles ?? []).map((r) => r.user_id);
+      if (ids.length === 0) return;
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, firm_name")
+        .in("id", ids);
+      setCas(profiles ?? []);
+      if (profiles && profiles.length > 0) setSelectedCa(profiles[0].id);
+    };
+    load();
+  }, []);
+
+  const choose = async (plan: "review" | "file") => {
+    if (!user) {
+      toast.error("Please sign in first");
+      navigate("/signup");
+      return;
+    }
+    if (!selectedCa) {
+      toast.error("Choose a CA to continue");
+      return;
+    }
+    setSubmitting(true);
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, pan, income_type")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const { error } = await supabase.from("clients").insert({
+      ca_id: selectedCa,
+      source_user_id: user.id,
+      full_name: profile?.full_name || user.email || "New client",
+      pan: profile?.pan ?? null,
+      income_type: profile?.income_type ?? null,
+      stage: "ready_for_review",
+      risk: "medium",
+    });
+    setSubmitting(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Your CA has been assigned. They'll reach out shortly.");
+    navigate("/profile");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <TopBar showCta={false} />
@@ -31,6 +95,33 @@ const Checkout = () => {
             </p>
           </div>
 
+          {/* CA picker */}
+          {cas.length > 0 && (
+            <div className="rounded-2xl border border-border bg-card p-5 text-left shadow-card">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Choose your CA</p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {cas.map((c) => {
+                  const active = selectedCa === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => setSelectedCa(c.id)}
+                      className={`flex items-center justify-between rounded-xl border px-3.5 py-3 text-left transition-base ${
+                        active ? "border-primary bg-accent shadow-glow" : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">{c.full_name || "Verified CA"}</p>
+                        <p className="truncate text-xs text-muted-foreground">{c.firm_name || "Independent"}</p>
+                      </div>
+                      <BadgeCheck className={`h-4 w-4 shrink-0 ${active ? "text-primary" : "text-muted-foreground"}`} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Plans */}
           <div className="grid gap-4 text-left sm:grid-cols-2">
             <PlanCard
@@ -44,8 +135,10 @@ const Checkout = () => {
                 "Fix-it action plan in 24 hrs",
                 "Chat with expert · 1 week",
               ]}
-              cta="Get CA Review"
+              cta={submitting ? "Please wait…" : "Get CA Review"}
               variant="outline"
+              onClick={() => choose("review")}
+              disabled={submitting}
             />
             <PlanCard
               highlight
@@ -60,8 +153,10 @@ const Checkout = () => {
                 "ITR filed & acknowledged",
                 "Notice support · 1 year",
               ]}
-              cta="File My Taxes"
+              cta={submitting ? "Please wait…" : "File My Taxes"}
               variant="hero"
+              onClick={() => choose("file")}
+              disabled={submitting}
             />
           </div>
 
@@ -106,10 +201,11 @@ const Checkout = () => {
 };
 
 const PlanCard = ({
-  badge, title, price, priceHint, tagline, features, cta, variant, highlight,
+  badge, title, price, priceHint, tagline, features, cta, variant, highlight, onClick, disabled,
 }: {
   badge: string; title: string; price: string; priceHint: string; tagline: string;
   features: string[]; cta: string; variant: "hero" | "outline"; highlight?: boolean;
+  onClick: () => void; disabled?: boolean;
 }) => (
   <div
     className={`relative flex flex-col rounded-2xl border bg-card p-6 shadow-card transition-base ${
@@ -140,7 +236,7 @@ const PlanCard = ({
       ))}
     </ul>
 
-    <Button variant={variant} size="lg" className="mt-6 w-full">
+    <Button onClick={onClick} disabled={disabled} variant={variant} size="lg" className="mt-6 w-full">
       {cta} <ArrowRight />
     </Button>
   </div>
