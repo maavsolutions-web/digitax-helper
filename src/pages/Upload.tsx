@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { TopBar } from "@/components/TopBar";
 import { FlowShell, StepHeader, StepCheck } from "@/components/flow/StepHeader";
-import { ArrowRight, Upload, FileText, Info, Lock } from "lucide-react";
+import { ArrowRight, Upload as UploadIcon, FileText, Info, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 interface Doc {
@@ -126,7 +126,7 @@ const Upload = () => {
                     )}
                   </div>
                   <div className={`hidden shrink-0 items-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-xs font-medium text-muted-foreground transition-base group-hover:border-primary/50 group-hover:text-primary sm:inline-flex ${done ? "opacity-50" : ""}`}>
-                    <Upload className="h-3.5 w-3.5" />
+                    <UploadIcon className="h-3.5 w-3.5" />
                     {done ? "Replace" : "Drag or click"}
                   </div>
                   <input
