@@ -1,0 +1,133 @@
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { TopBar } from "@/components/TopBar";
+import { ArrowLeft, ArrowRight, Briefcase } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+const CaLogin = () => {
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [name, setName] = useState("");
+  const [firm, setFirm] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handle = async () => {
+    if (!email || !password) {
+      toast.error("Email and password are required");
+      return;
+    }
+    setLoading(true);
+    try {
+      if (mode === "signup") {
+        if (!name || !firm) {
+          toast.error("Name and firm are required");
+          setLoading(false);
+          return;
+        }
+        const redirectUrl = `${window.location.origin}/mitra`;
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: redirectUrl,
+            data: { full_name: name, firm_name: firm, phone },
+          },
+        });
+        if (error) throw error;
+        if (data.user) {
+          const { error: roleErr } = await supabase
+            .from("user_roles")
+            .insert({ user_id: data.user.id, role: "ca" });
+          if (roleErr && !roleErr.message.includes("duplicate")) throw roleErr;
+        }
+        toast.success("Welcome to Maav Mitra");
+        navigate("/mitra");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast.success("Signed in");
+        navigate("/mitra");
+      }
+    } catch (e: any) {
+      toast.error(e.message ?? "Authentication failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <TopBar showCta={false} />
+      <main className="container max-w-md py-10 sm:py-16">
+        <div className="rounded-3xl border border-border bg-card p-7 shadow-card sm:p-9 animate-fade-in">
+          <div className="mb-6 grid h-12 w-12 place-items-center rounded-2xl bg-accent text-primary">
+            <Briefcase className="h-5 w-5" />
+          </div>
+
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Maav Mitra</p>
+          <h1 className="mt-1 font-display text-2xl font-bold tracking-tight">
+            {mode === "signin" ? "CA sign in" : "Create your CA workspace"}
+          </h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            {mode === "signin" ? "Access your client pipeline." : "Manage clients, reviews, and filings."}
+          </p>
+
+          <div className="mt-6 space-y-3">
+            {mode === "signup" && (
+              <>
+                <Field label="Full name">
+                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="CA Rohan Mehta" />
+                </Field>
+                <Field label="Firm name">
+                  <Input value={firm} onChange={(e) => setFirm(e.target.value)} placeholder="Mehta & Associates" />
+                </Field>
+                <Field label="Phone (optional)">
+                  <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" />
+                </Field>
+              </>
+            )}
+            <Field label="Email">
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@firm.com" />
+            </Field>
+            <Field label="Password">
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+            </Field>
+          </div>
+
+          <Button onClick={handle} disabled={loading} variant="hero" size="lg" className="mt-6 w-full">
+            {loading ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"} <ArrowRight />
+          </Button>
+
+          <button
+            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+            className="mt-4 block w-full text-center text-xs text-muted-foreground hover:text-foreground"
+          >
+            {mode === "signin" ? "New to Maav Mitra? " : "Already have an account? "}
+            <span className="font-medium text-primary">
+              {mode === "signin" ? "Create account" : "Sign in"}
+            </span>
+          </button>
+        </div>
+
+        <Link to="/" className="mt-6 inline-flex items-center gap-1.5 px-2 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" /> Back to home
+        </Link>
+      </main>
+    </div>
+  );
+};
+
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div>
+    <label className="block text-xs font-medium text-muted-foreground">{label}</label>
+    <div className="mt-1.5">{children}</div>
+  </div>
+);
+
+export default CaLogin;
