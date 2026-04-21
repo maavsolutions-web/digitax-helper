@@ -18,6 +18,27 @@ const CaLogin = () => {
   const navigate = useNavigate();
 
   const handle = async () => {
+    if (mode === "reset") {
+      if (!email) {
+        toast.error("Enter your email to receive a reset link");
+        return;
+      }
+      setLoading(true);
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/ca/login`,
+        });
+        if (error) throw error;
+        toast.success("Password reset link sent. Check your email.");
+        setMode("signin");
+      } catch (e: any) {
+        toast.error(e.message ?? "Failed to send reset link");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     if (!email || !password) {
       toast.error("Email and password are required");
       return;
@@ -40,7 +61,6 @@ const CaLogin = () => {
           },
         });
         if (error) throw error;
-        // Auto-confirm is on, so a session should exist. If not, sign in.
         const { data: sessionData } = await supabase.auth.getSession();
         if (!sessionData.session) {
           const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
