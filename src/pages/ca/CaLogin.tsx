@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const CaLogin = () => {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
   const [name, setName] = useState("");
   const [firm, setFirm] = useState("");
   const [email, setEmail] = useState("");
@@ -18,6 +18,27 @@ const CaLogin = () => {
   const navigate = useNavigate();
 
   const handle = async () => {
+    if (mode === "reset") {
+      if (!email) {
+        toast.error("Enter your email to receive a reset link");
+        return;
+      }
+      setLoading(true);
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/ca/login`,
+        });
+        if (error) throw error;
+        toast.success("Password reset link sent. Check your email.");
+        setMode("signin");
+      } catch (e: any) {
+        toast.error(e.message ?? "Failed to send reset link");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     if (!email || !password) {
       toast.error("Email and password are required");
       return;
@@ -40,7 +61,6 @@ const CaLogin = () => {
           },
         });
         if (error) throw error;
-        // Auto-confirm is on, so a session should exist. If not, sign in.
         const { data: sessionData } = await supabase.auth.getSession();
         if (!sessionData.session) {
           const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
@@ -72,10 +92,14 @@ const CaLogin = () => {
 
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Maav Mitra</p>
           <h1 className="mt-1 font-display text-2xl font-bold tracking-tight">
-            {mode === "signin" ? "CA sign in" : "Create your CA workspace"}
+            {mode === "signin" ? "CA sign in" : mode === "signup" ? "Create your CA workspace" : "Reset your password"}
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            {mode === "signin" ? "Access your client pipeline." : "Manage clients, reviews, and filings."}
+            {mode === "signin"
+              ? "Access your client pipeline."
+              : mode === "signup"
+              ? "Manage clients, reviews, and filings."
+              : "Enter your email and we'll send you a reset link."}
           </p>
 
           <div className="mt-6 space-y-3">
@@ -95,20 +119,31 @@ const CaLogin = () => {
             <Field label="Email">
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@firm.com" />
             </Field>
-            <Field label="Password">
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-            </Field>
+            {mode !== "reset" && (
+              <Field label="Password">
+                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+              </Field>
+            )}
           </div>
 
           <Button onClick={handle} disabled={loading} variant="hero" size="lg" className="mt-6 w-full">
-            {loading ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"} <ArrowRight />
+            {loading ? "Please wait..." : mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"} <ArrowRight />
           </Button>
+
+          {mode === "signin" && (
+            <button
+              onClick={() => setMode("reset")}
+              className="mt-3 block w-full text-center text-xs text-muted-foreground hover:text-foreground"
+            >
+              Forgot password?
+            </button>
+          )}
 
           <button
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
             className="mt-4 block w-full text-center text-xs text-muted-foreground hover:text-foreground"
           >
-            {mode === "signin" ? "New to Maav Mitra? " : "Already have an account? "}
+            {mode === "signin" ? "New to Maav Mitra? " : mode === "signup" ? "Already have an account? " : "Remembered it? "}
             <span className="font-medium text-primary">
               {mode === "signin" ? "Create account" : "Sign in"}
             </span>
