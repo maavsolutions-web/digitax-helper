@@ -194,23 +194,45 @@ const Detail = () => {
               <div className="flex items-center gap-2">
                 <Activity className="h-4 w-4 text-primary" />
                 <h3 className="font-display text-sm font-semibold">Tax health</h3>
+                {report?.ca_approved && (
+                  <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-semibold text-success">
+                    <CheckCircle2 className="h-3 w-3" /> Approved
+                  </span>
+                )}
               </div>
               {report ? (
                 <>
                   <div className="mt-4 font-display text-4xl font-bold tabular-nums">{report.health_score}</div>
-                  <p className="text-xs text-muted-foreground">out of 100</p>
+                  <p className="text-xs text-muted-foreground">out of 100 · {report.filing_year ?? "FY 2024-25"}</p>
+                  {report.summary && (
+                    <p className="mt-3 text-xs text-muted-foreground">{report.summary}</p>
+                  )}
                   <div className="mt-4 space-y-2 text-xs">
                     {report.refund_amount != null && (
-                      <div className="flex justify-between"><span className="text-muted-foreground">Refund</span><span className="font-semibold text-success">₹{Number(report.refund_amount).toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Refund</span><span className="font-semibold text-success">₹{Number(report.refund_amount).toLocaleString("en-IN")}</span></div>
                     )}
                     {report.payable_amount != null && (
-                      <div className="flex justify-between"><span className="text-muted-foreground">Payable</span><span className="font-semibold text-warning">₹{Number(report.payable_amount).toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Payable</span><span className="font-semibold text-warning">₹{Number(report.payable_amount).toLocaleString("en-IN")}</span></div>
                     )}
                   </div>
                 </>
               ) : (
                 <p className="mt-4 text-xs text-muted-foreground">No report generated yet.</p>
               )}
+
+              <div className="mt-4 flex flex-col gap-2">
+                <Button onClick={generateReport} disabled={analyzing || docs.length === 0} variant="hero" size="sm" className="w-full">
+                  {analyzing ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Analyzing…</> : <><Sparkles className="h-3.5 w-3.5" /> {report ? "Regenerate with AI" : "Generate AI report"}</>}
+                </Button>
+                {report && !report.ca_approved && (
+                  <Button onClick={approveReport} variant="outline" size="sm" className="w-full">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Approve & finalize
+                  </Button>
+                )}
+                {docs.length === 0 && (
+                  <p className="text-[11px] text-muted-foreground">Upload documents first to enable AI analysis.</p>
+                )}
+              </div>
             </div>
 
             {/* Documents */}
