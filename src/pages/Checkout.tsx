@@ -60,7 +60,7 @@ const Checkout = () => {
       .eq("id", user.id)
       .maybeSingle();
 
-    const { error } = await supabase.from("clients").insert({
+    const { data: newClient, error } = await supabase.from("clients").insert({
       ca_id: selectedCa,
       source_user_id: user.id,
       full_name: profile?.full_name || user.email || "New client",
@@ -68,12 +68,19 @@ const Checkout = () => {
       income_type: profile?.income_type ?? null,
       stage: "ready_for_review",
       risk: "medium",
-    });
-    setSubmitting(false);
-    if (error) {
-      toast.error(error.message);
+    }).select("id").single();
+
+    if (error || !newClient) {
+      setSubmitting(false);
+      toast.error(error?.message ?? "Could not assign CA");
       return;
     }
+
+    // Back-link this user's recent uploads + report to the new client so the CA can see them
+    await supabase.from("documents").update({ client_id: newClient.id }).is("client_id", null).eq("owner_user_id", user.id);
+    await supabase.from("reports").update({ client_id: newClient.id }).is("client_id", null).eq("owner_user_id", user.id);
+
+    setSubmitting(false);
     toast.success("Your CA has been assigned. They'll reach out shortly.");
     navigate("/profile");
   };
