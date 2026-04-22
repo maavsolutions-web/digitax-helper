@@ -164,40 +164,58 @@ export type Database = {
       }
       reports: {
         Row: {
+          ca_approved: boolean
           client_id: string | null
           created_at: string
+          filing_year: string | null
           health_score: number
           id: string
           key_issues: Json
           owner_user_id: string
+          parsed_data: Json
           payable_amount: number | null
           refund_amount: number | null
           risk_alerts: Json
           savings: Json
+          status: Database["public"]["Enums"]["report_status"]
+          summary: string | null
+          updated_at: string
         }
         Insert: {
+          ca_approved?: boolean
           client_id?: string | null
           created_at?: string
+          filing_year?: string | null
           health_score: number
           id?: string
           key_issues?: Json
           owner_user_id: string
+          parsed_data?: Json
           payable_amount?: number | null
           refund_amount?: number | null
           risk_alerts?: Json
           savings?: Json
+          status?: Database["public"]["Enums"]["report_status"]
+          summary?: string | null
+          updated_at?: string
         }
         Update: {
+          ca_approved?: boolean
           client_id?: string | null
           created_at?: string
+          filing_year?: string | null
           health_score?: number
           id?: string
           key_issues?: Json
           owner_user_id?: string
+          parsed_data?: Json
           payable_amount?: number | null
           refund_amount?: number | null
           risk_alerts?: Json
           savings?: Json
+          status?: Database["public"]["Enums"]["report_status"]
+          summary?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -257,6 +275,7 @@ export type Database = {
         | "ready_for_review"
         | "awaiting_approval"
         | "filed"
+      report_status: "draft" | "final" | "failed" | "processing"
       risk_level: "low" | "medium" | "high"
     }
     CompositeTypes: {
@@ -400,6 +419,7 @@ export const Constants = {
         "awaiting_approval",
         "filed",
       ],
+      report_status: ["draft", "final", "failed", "processing"],
       risk_level: ["low", "medium", "high"],
     },
   },
