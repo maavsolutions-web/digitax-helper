@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { STAGES, StageId, RISK_TONE } from "@/lib/pipeline";
-import { ArrowLeft, FileText, MessageSquare, Activity, Trash2 } from "lucide-react";
+import { ArrowLeft, FileText, MessageSquare, Activity, Trash2, Sparkles, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const Detail = () => {
@@ -20,6 +20,7 @@ const Detail = () => {
   const [notes, setNotes] = useState<any[]>([]);
   const [noteBody, setNoteBody] = useState("");
   const [loading, setLoading] = useState(true);
+  const [analyzing, setAnalyzing] = useState(false);
 
   const load = async () => {
     if (!id || !user) return;
@@ -81,6 +82,38 @@ const Detail = () => {
       toast.error("Could not delete");
       setNotes(prev);
     }
+  };
+
+  const generateReport = async () => {
+    if (!id) return;
+    setAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-tax-docs", {
+        body: { clientId: id },
+      });
+      if (error) throw error;
+      toast.success("AI report generated");
+      await load();
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message ?? "Could not generate report");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const approveReport = async () => {
+    if (!report) return;
+    const { error } = await supabase
+      .from("reports")
+      .update({ ca_approved: true, status: "final" })
+      .eq("id", report.id);
+    if (error) {
+      toast.error("Could not approve");
+      return;
+    }
+    toast.success("Report approved");
+    setReport({ ...report, ca_approved: true, status: "final" });
   };
 
   if (loading) return (
