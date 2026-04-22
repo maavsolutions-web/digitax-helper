@@ -17,6 +17,7 @@ import Clients from "./pages/ca/Clients.tsx";
 import Pipeline from "./pages/ca/Pipeline.tsx";
 import ClientDetail from "./pages/ca/ClientDetail.tsx";
 import { AuthProvider } from "./hooks/useAuth";
+import { ThemeByRoute } from "./components/ThemeByRoute";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <ThemeByRoute />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/signup" element={<Signup />} />
