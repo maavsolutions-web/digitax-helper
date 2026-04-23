@@ -117,8 +117,11 @@ const ClientsInner = () => {
               <Button variant="hero" onClick={add} disabled={saving}>{saving ? "Saving…" : "Add client"}</Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
+
+      <BulkImportDialog open={bulkOpen} onOpenChange={setBulkOpen} onComplete={load} />
 
       <div className="rounded-2xl border border-border bg-card shadow-card">
         <div className="border-b border-border p-4">
