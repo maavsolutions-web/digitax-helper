@@ -5,11 +5,12 @@ import { MitraShell } from "@/components/ca/MitraShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Search, UserPlus, ArrowRight } from "lucide-react";
+import { Search, UserPlus, ArrowRight, FileUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { RISK_TONE } from "@/lib/pipeline";
+import { BulkImportDialog } from "@/components/ca/BulkImportDialog";
 
 const ClientsInner = () => {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ const ClientsInner = () => {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const [form, setForm] = useState({ full_name: "", pan: "", income_type: "Salaried" });
   const [saving, setSaving] = useState(false);
 
@@ -75,13 +77,17 @@ const ClientsInner = () => {
           <h1 className="font-display text-2xl font-bold tracking-tight">Clients</h1>
           <p className="mt-1 text-sm text-muted-foreground">Search, add, and open your client files.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button variant="hero" size="sm">
-              <UserPlus className="h-4 w-4" /> Add client
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setBulkOpen(true)}>
+            <FileUp className="h-4 w-4" /> Bulk import
+          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button variant="hero" size="sm">
+                <UserPlus className="h-4 w-4" /> Add client
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
             <DialogHeader>
               <DialogTitle>Add new client</DialogTitle>
             </DialogHeader>
@@ -111,8 +117,11 @@ const ClientsInner = () => {
               <Button variant="hero" onClick={add} disabled={saving}>{saving ? "Saving…" : "Add client"}</Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
+
+      <BulkImportDialog open={bulkOpen} onOpenChange={setBulkOpen} onComplete={load} />
 
       <div className="rounded-2xl border border-border bg-card shadow-card">
         <div className="border-b border-border p-4">
