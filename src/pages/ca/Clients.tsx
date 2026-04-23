@@ -77,13 +77,17 @@ const ClientsInner = () => {
           <h1 className="font-display text-2xl font-bold tracking-tight">Clients</h1>
           <p className="mt-1 text-sm text-muted-foreground">Search, add, and open your client files.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button variant="hero" size="sm">
-              <UserPlus className="h-4 w-4" /> Add client
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setBulkOpen(true)}>
+            <FileUp className="h-4 w-4" /> Bulk import
+          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button variant="hero" size="sm">
+                <UserPlus className="h-4 w-4" /> Add client
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
             <DialogHeader>
               <DialogTitle>Add new client</DialogTitle>
             </DialogHeader>
