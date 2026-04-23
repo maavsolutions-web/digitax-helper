@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { TopBar } from "@/components/TopBar";
-import { Briefcase, LayoutDashboard, Users, KanbanSquare, LogOut } from "lucide-react";
+import { Briefcase, LayoutDashboard, Users, KanbanSquare, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +9,7 @@ const links = [
   { to: "/mitra", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/mitra/clients", label: "Clients", icon: Users },
   { to: "/mitra/pipeline", label: "Pipeline", icon: KanbanSquare },
+  { to: "/mitra/settings", label: "Settings", icon: Settings },
 ];
 
 export const MitraShell = ({ children }: { children: ReactNode }) => {

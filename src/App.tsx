@@ -16,6 +16,8 @@ import MitraDashboard from "./pages/ca/MitraDashboard.tsx";
 import Clients from "./pages/ca/Clients.tsx";
 import Pipeline from "./pages/ca/Pipeline.tsx";
 import ClientDetail from "./pages/ca/ClientDetail.tsx";
+import MitraSettings from "./pages/ca/MitraSettings.tsx";
+import CaReferralLanding from "./pages/ca/CaReferralLanding.tsx";
 import { AuthProvider } from "./hooks/useAuth";
 import { ThemeByRoute } from "./components/ThemeByRoute";
 
@@ -38,10 +40,12 @@ const App = () => (
             <Route path="/report" element={<Report />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/ca/login" element={<CaLogin />} />
+            <Route path="/ca/:slug" element={<CaReferralLanding />} />
             <Route path="/mitra" element={<MitraDashboard />} />
             <Route path="/mitra/clients" element={<Clients />} />
             <Route path="/mitra/clients/:id" element={<ClientDetail />} />
             <Route path="/mitra/pipeline" element={<Pipeline />} />
+            <Route path="/mitra/settings" element={<MitraSettings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

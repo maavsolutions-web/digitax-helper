@@ -56,6 +56,47 @@ export type Database = {
         }
         Relationships: []
       }
+      communications: {
+        Row: {
+          ca_id: string
+          client_id: string
+          delivered: boolean
+          delivery_meta: Json
+          id: string
+          message_content: string
+          message_type: Database["public"]["Enums"]["communication_type"]
+          sent_at: string
+        }
+        Insert: {
+          ca_id: string
+          client_id: string
+          delivered?: boolean
+          delivery_meta?: Json
+          id?: string
+          message_content: string
+          message_type?: Database["public"]["Enums"]["communication_type"]
+          sent_at?: string
+        }
+        Update: {
+          ca_id?: string
+          client_id?: string
+          delivered?: boolean
+          delivery_meta?: Json
+          id?: string
+          message_content?: string
+          message_type?: Database["public"]["Enums"]["communication_type"]
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communications_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           client_id: string | null
@@ -96,6 +137,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      firm_members: {
+        Row: {
+          accepted_at: string | null
+          firm_id: string
+          id: string
+          invited_at: string
+          invited_by: string
+          invited_email: string | null
+          invited_phone: string | null
+          member_user_id: string | null
+          role: Database["public"]["Enums"]["firm_role"]
+        }
+        Insert: {
+          accepted_at?: string | null
+          firm_id: string
+          id?: string
+          invited_at?: string
+          invited_by: string
+          invited_email?: string | null
+          invited_phone?: string | null
+          member_user_id?: string | null
+          role?: Database["public"]["Enums"]["firm_role"]
+        }
+        Update: {
+          accepted_at?: string | null
+          firm_id?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string
+          invited_email?: string | null
+          invited_phone?: string | null
+          member_user_id?: string | null
+          role?: Database["public"]["Enums"]["firm_role"]
+        }
+        Relationships: []
       }
       notes: {
         Row: {
@@ -138,6 +215,8 @@ export type Database = {
           income_type: string | null
           pan: string | null
           phone: string | null
+          referral_slug: string | null
+          referred_by_ca: string | null
           updated_at: string
         }
         Insert: {
@@ -148,6 +227,8 @@ export type Database = {
           income_type?: string | null
           pan?: string | null
           phone?: string | null
+          referral_slug?: string | null
+          referred_by_ca?: string | null
           updated_at?: string
         }
         Update: {
@@ -158,6 +239,8 @@ export type Database = {
           income_type?: string | null
           pan?: string | null
           phone?: string | null
+          referral_slug?: string | null
+          referred_by_ca?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -253,6 +336,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      firm_role_for: {
+        Args: { _firm_id: string; _user_id: string }
+        Returns: Database["public"]["Enums"]["firm_role"]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -260,15 +347,26 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_firm_owner: {
+        Args: { _firm_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "individual" | "ca"
+      communication_type:
+        | "document_request"
+        | "reminder"
+        | "status_update"
+        | "invite"
+        | "custom"
       document_type:
         | "form_26as"
         | "ais"
         | "form_16"
         | "investment_proof"
         | "other"
+      firm_role: "owner" | "senior" | "junior"
       pipeline_stage:
         | "docs_pending"
         | "processing"
@@ -405,6 +503,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["individual", "ca"],
+      communication_type: [
+        "document_request",
+        "reminder",
+        "status_update",
+        "invite",
+        "custom",
+      ],
       document_type: [
         "form_26as",
         "ais",
@@ -412,6 +517,7 @@ export const Constants = {
         "investment_proof",
         "other",
       ],
+      firm_role: ["owner", "senior", "junior"],
       pipeline_stage: [
         "docs_pending",
         "processing",
