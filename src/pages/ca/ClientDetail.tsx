@@ -310,6 +310,9 @@ const Detail = () => {
               </ul>
             )}
           </div>
+
+          {/* Communications */}
+          <CommunicationsLog clientId={client.id} clientName={client.full_name} clientPhone={sourcePhone} />
         </div>
       </MitraShell>
     </CaGuard>
