@@ -16,6 +16,8 @@ import MitraDashboard from "./pages/ca/MitraDashboard.tsx";
 import Clients from "./pages/ca/Clients.tsx";
 import Pipeline from "./pages/ca/Pipeline.tsx";
 import ClientDetail from "./pages/ca/ClientDetail.tsx";
+import MitraSettings from "./pages/ca/MitraSettings.tsx";
+import CaReferralLanding from "./pages/ca/CaReferralLanding.tsx";
 import { AuthProvider } from "./hooks/useAuth";
 import { ThemeByRoute } from "./components/ThemeByRoute";
 
