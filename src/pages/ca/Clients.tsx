@@ -18,6 +18,7 @@ const ClientsInner = () => {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const [form, setForm] = useState({ full_name: "", pan: "", income_type: "Salaried" });
   const [saving, setSaving] = useState(false);
 
