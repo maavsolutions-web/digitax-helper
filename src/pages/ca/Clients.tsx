@@ -5,11 +5,12 @@ import { MitraShell } from "@/components/ca/MitraShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Search, UserPlus, ArrowRight } from "lucide-react";
+import { Search, UserPlus, ArrowRight, FileUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { RISK_TONE } from "@/lib/pipeline";
+import { BulkImportDialog } from "@/components/ca/BulkImportDialog";
 
 const ClientsInner = () => {
   const { user } = useAuth();
