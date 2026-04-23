@@ -16,6 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { REFERRED_CA_KEY } from "@/lib/referral";
 
 const Checkout = () => {
   const { user } = useAuth();
@@ -38,7 +39,17 @@ const Checkout = () => {
         .select("id, full_name, firm_name")
         .in("id", ids);
       setCas(profiles ?? []);
-      if (profiles && profiles.length > 0) setSelectedCa(profiles[0].id);
+
+      // Pre-select referring CA if user came via /ca/:slug, else first
+      let preferred: string | null = null;
+      try {
+        preferred = sessionStorage.getItem(REFERRED_CA_KEY);
+      } catch {}
+      if (preferred && profiles?.some((p) => p.id === preferred)) {
+        setSelectedCa(preferred);
+      } else if (profiles && profiles.length > 0) {
+        setSelectedCa(profiles[0].id);
+      }
     };
     load();
   }, []);
@@ -79,6 +90,10 @@ const Checkout = () => {
     // Back-link this user's recent uploads + report to the new client so the CA can see them
     await supabase.from("documents").update({ client_id: newClient.id }).is("client_id", null).eq("owner_user_id", user.id);
     await supabase.from("reports").update({ client_id: newClient.id }).is("client_id", null).eq("owner_user_id", user.id);
+
+    // Persist referred_by_ca on the user's profile (idempotent)
+    await supabase.from("profiles").update({ referred_by_ca: selectedCa }).eq("id", user.id);
+    try { sessionStorage.removeItem(REFERRED_CA_KEY); } catch {}
 
     setSubmitting(false);
     toast.success("Your CA has been assigned. They'll reach out shortly.");
