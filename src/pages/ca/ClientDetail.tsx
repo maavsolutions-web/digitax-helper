@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { STAGES, StageId, RISK_TONE } from "@/lib/pipeline";
 import { ArrowLeft, FileText, MessageSquare, Activity, Trash2, Sparkles, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { CommunicationsLog } from "@/components/ca/CommunicationsLog";
 
 const Detail = () => {
   const { id } = useParams();
@@ -21,6 +22,7 @@ const Detail = () => {
   const [noteBody, setNoteBody] = useState("");
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
+  const [sourcePhone, setSourcePhone] = useState<string | null>(null);
 
   const load = async () => {
     if (!id || !user) return;
@@ -34,6 +36,19 @@ const Detail = () => {
     setDocs(d ?? []);
     setReport(r);
     setNotes(n ?? []);
+
+    // Pull the linked user's phone for WhatsApp deep-link, if any
+    if (c?.source_user_id) {
+      const { data: srcProfile } = await supabase
+        .from("profiles")
+        .select("phone")
+        .eq("id", c.source_user_id)
+        .maybeSingle();
+      setSourcePhone(srcProfile?.phone ?? null);
+    } else {
+      setSourcePhone(null);
+    }
+
     setLoading(false);
   };
 
