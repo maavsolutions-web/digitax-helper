@@ -186,6 +186,22 @@ const ClientsInner = () => {
 
       <BulkImportDialog open={bulkOpen} onOpenChange={setBulkOpen} onComplete={load} />
 
+      <div className="flex flex-wrap items-center gap-2">
+        {sortOptions.map((o) => (
+          <button
+            key={o.key}
+            onClick={() => setSortKey(o.key)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-base ${
+              sortKey === o.key
+                ? "bg-primary text-primary-foreground shadow-glow"
+                : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+
       <div className="rounded-2xl border border-border bg-card shadow-card">
         <div className="border-b border-border p-4">
           <div className="relative">
