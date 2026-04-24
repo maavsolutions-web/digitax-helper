@@ -254,25 +254,48 @@ const Detail = () => {
               <div className="flex items-center gap-2">
                 <Activity className="h-4 w-4 text-primary" />
                 <h3 className="font-display text-sm font-semibold">Tax health</h3>
-                {report?.ca_approved && (
+                {!isArchived && report?.ca_approved && (
                   <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-semibold text-success">
                     <CheckCircle2 className="h-3 w-3" /> Approved
                   </span>
                 )}
               </div>
-              {report ? (
+
+              {snapshots.length > 0 && (
+                <div className="mt-3 flex items-center justify-end gap-2">
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Viewing month:</label>
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                  >
+                    <option value="current">{formatMonth(`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`)} (current)</option>
+                    {snapshots.map((s) => (
+                      <option key={s.id} value={s.snapshot_month}>{formatMonth(s.snapshot_month)}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {isArchived && activeSnap && (
+                <div className="mt-3 rounded-lg border border-warning/40 bg-warning-soft px-3 py-2 text-xs text-warning">
+                  You are viewing the archived report for {formatMonth(activeSnap.snapshot_month)} — read only
+                </div>
+              )}
+
+              {viewedReport ? (
                 <>
-                  <div className="mt-4 font-display text-4xl font-bold tabular-nums">{report.health_score}</div>
-                  <p className="text-xs text-muted-foreground">out of 100 · {report.filing_year ?? "FY 2024-25"}</p>
-                  {report.summary && (
-                    <p className="mt-3 text-xs text-muted-foreground">{report.summary}</p>
+                  <div className="mt-4 font-display text-4xl font-bold tabular-nums">{viewedReport.health_score ?? "—"}</div>
+                  <p className="text-xs text-muted-foreground">out of 100 · {viewedReport.filing_year ?? "FY 2024-25"}</p>
+                  {viewedReport.summary && (
+                    <p className="mt-3 text-xs text-muted-foreground">{viewedReport.summary}</p>
                   )}
                   <div className="mt-4 space-y-2 text-xs">
-                    {report.refund_amount != null && (
-                      <div className="flex justify-between"><span className="text-muted-foreground">Refund</span><span className="font-semibold text-success">₹{Number(report.refund_amount).toLocaleString("en-IN")}</span></div>
+                    {viewedReport.refund_amount != null && (
+                      <div className="flex justify-between"><span className="text-muted-foreground">Refund</span><span className="font-semibold text-success">₹{Number(viewedReport.refund_amount).toLocaleString("en-IN")}</span></div>
                     )}
-                    {report.payable_amount != null && (
-                      <div className="flex justify-between"><span className="text-muted-foreground">Payable</span><span className="font-semibold text-warning">₹{Number(report.payable_amount).toLocaleString("en-IN")}</span></div>
+                    {viewedReport.payable_amount != null && (
+                      <div className="flex justify-between"><span className="text-muted-foreground">Payable</span><span className="font-semibold text-warning">₹{Number(viewedReport.payable_amount).toLocaleString("en-IN")}</span></div>
                     )}
                   </div>
                 </>
@@ -281,10 +304,10 @@ const Detail = () => {
               )}
 
               <div className="mt-4 flex flex-col gap-2">
-                <Button onClick={generateReport} disabled={analyzing || docs.length === 0} variant="hero" size="sm" className="w-full">
+                <Button onClick={generateReport} disabled={analyzing || docs.length === 0 || isArchived} variant="hero" size="sm" className="w-full">
                   {analyzing ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Analyzing…</> : <><Sparkles className="h-3.5 w-3.5" /> {report ? "Regenerate with AI" : "Generate AI report"}</>}
                 </Button>
-                {report && (
+                {report && !isArchived && (
                   <Button onClick={() => setConfirmRefresh(true)} disabled={refreshing || docs.length === 0} variant="outline" size="sm" className="w-full">
                     {refreshing ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Refreshing…</> : <><RefreshCw className="h-3.5 w-3.5" /> Refresh report now</>}
                   </Button>
