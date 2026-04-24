@@ -61,16 +61,18 @@ const Detail = () => {
 
   const load = async () => {
     if (!id || !user) return;
-    const [{ data: c }, { data: d }, { data: r }, { data: n }] = await Promise.all([
+    const [{ data: c }, { data: d }, { data: r }, { data: n }, { data: snaps }] = await Promise.all([
       supabase.from("clients").select("*").eq("id", id).maybeSingle(),
       supabase.from("documents").select("*").eq("client_id", id).order("created_at", { ascending: false }),
       supabase.from("reports").select("*").eq("client_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       supabase.from("notes").select("*").eq("client_id", id).order("created_at", { ascending: false }),
+      supabase.from("report_snapshots").select("*").eq("client_id", id).eq("ca_id", user.id).order("snapshot_month", { ascending: false }),
     ]);
     setClient(c);
     setDocs(d ?? []);
     setReport(r);
     setNotes(n ?? []);
+    setSnapshots(snaps ?? []);
 
     // Pull the linked user's phone for WhatsApp deep-link, if any
     if (c?.source_user_id) {
