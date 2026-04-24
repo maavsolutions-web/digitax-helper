@@ -7,9 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { STAGES, StageId, RISK_TONE } from "@/lib/pipeline";
-import { ArrowLeft, FileText, MessageSquare, Activity, Trash2, Sparkles, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowLeft, FileText, MessageSquare, Activity, Trash2, Sparkles, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { CommunicationsLog } from "@/components/ca/CommunicationsLog";
+import { ReportHistoryPanel } from "@/components/ca/ReportHistoryPanel";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const Detail = () => {
   const { id } = useParams();
@@ -22,7 +24,38 @@ const Detail = () => {
   const [noteBody, setNoteBody] = useState("");
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [confirmRefresh, setConfirmRefresh] = useState(false);
   const [sourcePhone, setSourcePhone] = useState<string | null>(null);
+
+  const monthLabel = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+
+  const refreshNow = async () => {
+    if (!id || !user || !report) return;
+    setRefreshing(true);
+    try {
+      // Snapshot current report under current month before refresh
+      await supabase.from("report_snapshots").upsert({
+        client_id: id,
+        ca_id: user.id,
+        snapshot_month: monthLabel(),
+        report_data: report,
+        health_score: report.health_score ?? null,
+        is_stale: false,
+      }, { onConflict: "client_id,snapshot_month" });
+
+      const { error } = await supabase.functions.invoke("analyze-tax-docs", { body: { clientId: id } });
+      if (error) throw error;
+      await supabase.from("reports").update({ last_refreshed_at: new Date().toISOString() }).eq("id", report.id);
+      toast.success("Report refreshed");
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Refresh failed");
+    } finally {
+      setRefreshing(false);
+      setConfirmRefresh(false);
+    }
+  };
 
   const load = async () => {
     if (!id || !user) return;
