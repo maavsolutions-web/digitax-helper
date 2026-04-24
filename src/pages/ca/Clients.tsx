@@ -55,13 +55,57 @@ const ClientsInner = () => {
 
   useEffect(() => { load(); }, [user]);
 
+  type SortKey = "newest" | "oldest" | "week" | "month" | "lastMonth";
+  const [sortKey, setSortKey] = useState<SortKey>("newest");
+
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return clients;
-    return clients.filter((c) =>
-      [c.full_name, c.pan, c.income_type].filter(Boolean).some((v: string) => v.toLowerCase().includes(s))
-    );
-  }, [clients, q]);
+    let list = clients;
+    if (s) {
+      list = list.filter((c) =>
+        [c.full_name, c.pan, c.income_type].filter(Boolean).some((v: string) => v.toLowerCase().includes(s))
+      );
+    }
+
+    const reportTs = (id: string) => {
+      const t = refreshMap[id];
+      return t ? new Date(t).getTime() : 0;
+    };
+
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+    const endOfLastMonth = startOfMonth;
+
+    if (sortKey === "week") {
+      list = list.filter((c) => reportTs(c.id) >= startOfWeek.getTime());
+    } else if (sortKey === "month") {
+      list = list.filter((c) => reportTs(c.id) >= startOfMonth);
+    } else if (sortKey === "lastMonth") {
+      list = list.filter((c) => {
+        const t = reportTs(c.id);
+        return t >= startOfLastMonth && t < endOfLastMonth;
+      });
+    }
+
+    const sorted = [...list].sort((a, b) => {
+      const ta = reportTs(a.id);
+      const tb = reportTs(b.id);
+      return sortKey === "oldest" ? ta - tb : tb - ta;
+    });
+    return sorted;
+  }, [clients, q, sortKey, refreshMap]);
+
+  const sortOptions: { key: SortKey; label: string }[] = [
+    { key: "newest", label: "Newest report first" },
+    { key: "oldest", label: "Oldest report first" },
+    { key: "week", label: "This week" },
+    { key: "month", label: "This month" },
+    { key: "lastMonth", label: "Last month" },
+  ];
 
   const add = async () => {
     if (!user) return;
