@@ -27,6 +27,8 @@ const Detail = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [confirmRefresh, setConfirmRefresh] = useState(false);
   const [sourcePhone, setSourcePhone] = useState<string | null>(null);
+  const [snapshots, setSnapshots] = useState<any[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState<string>("current");
 
   const monthLabel = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 
