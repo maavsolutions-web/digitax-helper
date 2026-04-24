@@ -10,6 +10,7 @@ import Upload from "./pages/Upload.tsx";
 import Processing from "./pages/Processing.tsx";
 import Report from "./pages/Report.tsx";
 import Checkout from "./pages/Checkout.tsx";
+import Pricing from "./pages/Pricing.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import CaLogin from "./pages/ca/CaLogin.tsx";
 import MitraDashboard from "./pages/ca/MitraDashboard.tsx";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/processing" element={<Processing />} />
             <Route path="/report" element={<Report />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/ca/login" element={<CaLogin />} />
             <Route path="/ca/:slug" element={<CaReferralLanding />} />
             <Route path="/mitra" element={<MitraDashboard />} />
