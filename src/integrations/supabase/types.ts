@@ -97,6 +97,36 @@ export type Database = {
           },
         ]
       }
+      cron_errors: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          error_message: string
+          id: string
+          job_name: string
+          resolved: boolean
+          retry_after: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          error_message: string
+          id?: string
+          job_name: string
+          resolved?: boolean
+          retry_after?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          error_message?: string
+          id?: string
+          job_name?: string
+          resolved?: boolean
+          retry_after?: string | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           client_id: string | null
@@ -245,6 +275,47 @@ export type Database = {
         }
         Relationships: []
       }
+      report_snapshots: {
+        Row: {
+          ca_id: string
+          client_id: string
+          created_at: string
+          health_score: number | null
+          id: string
+          is_stale: boolean
+          report_data: Json
+          snapshot_month: string
+        }
+        Insert: {
+          ca_id: string
+          client_id: string
+          created_at?: string
+          health_score?: number | null
+          id?: string
+          is_stale?: boolean
+          report_data?: Json
+          snapshot_month: string
+        }
+        Update: {
+          ca_id?: string
+          client_id?: string
+          created_at?: string
+          health_score?: number | null
+          id?: string
+          is_stale?: boolean
+          report_data?: Json
+          snapshot_month?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_snapshots_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           ca_approved: boolean
@@ -254,6 +325,8 @@ export type Database = {
           health_score: number
           id: string
           key_issues: Json
+          last_refreshed_at: string | null
+          next_refresh_due: string | null
           owner_user_id: string
           parsed_data: Json
           payable_amount: number | null
@@ -272,6 +345,8 @@ export type Database = {
           health_score: number
           id?: string
           key_issues?: Json
+          last_refreshed_at?: string | null
+          next_refresh_due?: string | null
           owner_user_id: string
           parsed_data?: Json
           payable_amount?: number | null
@@ -290,6 +365,8 @@ export type Database = {
           health_score?: number
           id?: string
           key_issues?: Json
+          last_refreshed_at?: string | null
+          next_refresh_due?: string | null
           owner_user_id?: string
           parsed_data?: Json
           payable_amount?: number | null
