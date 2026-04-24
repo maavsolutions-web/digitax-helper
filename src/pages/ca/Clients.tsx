@@ -55,13 +55,57 @@ const ClientsInner = () => {
 
   useEffect(() => { load(); }, [user]);
 
+  type SortKey = "newest" | "oldest" | "week" | "month" | "lastMonth";
+  const [sortKey, setSortKey] = useState<SortKey>("newest");
+
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return clients;
-    return clients.filter((c) =>
-      [c.full_name, c.pan, c.income_type].filter(Boolean).some((v: string) => v.toLowerCase().includes(s))
-    );
-  }, [clients, q]);
+    let list = clients;
+    if (s) {
+      list = list.filter((c) =>
+        [c.full_name, c.pan, c.income_type].filter(Boolean).some((v: string) => v.toLowerCase().includes(s))
+      );
+    }
+
+    const reportTs = (id: string) => {
+      const t = refreshMap[id];
+      return t ? new Date(t).getTime() : 0;
+    };
+
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+    const endOfLastMonth = startOfMonth;
+
+    if (sortKey === "week") {
+      list = list.filter((c) => reportTs(c.id) >= startOfWeek.getTime());
+    } else if (sortKey === "month") {
+      list = list.filter((c) => reportTs(c.id) >= startOfMonth);
+    } else if (sortKey === "lastMonth") {
+      list = list.filter((c) => {
+        const t = reportTs(c.id);
+        return t >= startOfLastMonth && t < endOfLastMonth;
+      });
+    }
+
+    const sorted = [...list].sort((a, b) => {
+      const ta = reportTs(a.id);
+      const tb = reportTs(b.id);
+      return sortKey === "oldest" ? ta - tb : tb - ta;
+    });
+    return sorted;
+  }, [clients, q, sortKey, refreshMap]);
+
+  const sortOptions: { key: SortKey; label: string }[] = [
+    { key: "newest", label: "Newest report first" },
+    { key: "oldest", label: "Oldest report first" },
+    { key: "week", label: "This week" },
+    { key: "month", label: "This month" },
+    { key: "lastMonth", label: "Last month" },
+  ];
 
   const add = async () => {
     if (!user) return;
@@ -142,6 +186,22 @@ const ClientsInner = () => {
 
       <BulkImportDialog open={bulkOpen} onOpenChange={setBulkOpen} onComplete={load} />
 
+      <div className="flex flex-wrap items-center gap-2">
+        {sortOptions.map((o) => (
+          <button
+            key={o.key}
+            onClick={() => setSortKey(o.key)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-base ${
+              sortKey === o.key
+                ? "bg-primary text-primary-foreground shadow-glow"
+                : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+
       <div className="rounded-2xl border border-border bg-card shadow-card">
         <div className="border-b border-border p-4">
           <div className="relative">
@@ -184,12 +244,12 @@ const ClientsInner = () => {
                       <div className="font-semibold">{c.full_name}</div>
                       <div className="text-xs text-muted-foreground">
                         {c.income_type ?? "—"}
-                        {refreshMap[c.id] && (
-                          <span className="ml-2 text-[10px] text-muted-foreground/70">
-                            · Refreshed {new Date(refreshMap[c.id]).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-                          </span>
-                        )}
                       </div>
+                      {refreshMap[c.id] && (
+                        <div className="mt-0.5 text-[11px] text-muted-foreground">
+                          Report received: {new Date(refreshMap[c.id]).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                        </div>
+                      )}
                     </td>
                     <td className="px-5 py-3.5 font-mono text-xs">{c.pan ?? "—"}</td>
                     <td className="px-5 py-3.5">
