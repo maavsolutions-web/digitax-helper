@@ -172,6 +172,14 @@ const Detail = () => {
     <CaGuard><MitraShell><div className="p-10 text-sm text-muted-foreground">Loading client…</div></MitraShell></CaGuard>
   );
 
+  const formatMonth = (ym: string) => {
+    const [y, m] = ym.split("-").map(Number);
+    return new Date(y, m - 1, 1).toLocaleString("en-IN", { month: "long", year: "numeric" });
+  };
+  const isArchived = selectedMonth !== "current";
+  const activeSnap = isArchived ? snapshots.find((s) => s.snapshot_month === selectedMonth) : null;
+  const viewedReport = activeSnap ? { ...(activeSnap.report_data ?? {}), health_score: activeSnap.health_score ?? activeSnap.report_data?.health_score } : report;
+
   if (!client) return (
     <CaGuard><MitraShell>
       <div className="rounded-2xl border border-border bg-card p-10 text-center">
