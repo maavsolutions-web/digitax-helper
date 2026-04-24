@@ -1,1 +1,4 @@
 project_id = "hyxmufzyroajmaexwdtj"
+
+[functions.monthly-report-refresh]
+verify_jwt = false

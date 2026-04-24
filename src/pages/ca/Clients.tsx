@@ -22,6 +22,8 @@ const ClientsInner = () => {
   const [form, setForm] = useState({ full_name: "", pan: "", income_type: "Salaried" });
   const [saving, setSaving] = useState(false);
 
+  const [refreshMap, setRefreshMap] = useState<Record<string, string>>({});
+
   const load = async () => {
     if (!user) return;
     setLoading(true);
@@ -30,8 +32,25 @@ const ClientsInner = () => {
       .select("*")
       .eq("ca_id", user.id)
       .order("last_activity_at", { ascending: false });
-    setClients(data ?? []);
+    const list = data ?? [];
+    setClients(list);
     setLoading(false);
+
+    // Fetch latest report refresh per client
+    if (list.length > 0) {
+      const ids = list.map((c) => c.id);
+      const { data: reps } = await supabase
+        .from("reports")
+        .select("client_id, last_refreshed_at, created_at")
+        .in("client_id", ids);
+      const map: Record<string, string> = {};
+      (reps ?? []).forEach((r: any) => {
+        if (!r.client_id) return;
+        const ts = r.last_refreshed_at ?? r.created_at;
+        if (!map[r.client_id] || new Date(ts) > new Date(map[r.client_id])) map[r.client_id] = ts;
+      });
+      setRefreshMap(map);
+    }
   };
 
   useEffect(() => { load(); }, [user]);
@@ -163,7 +182,14 @@ const ClientsInner = () => {
                   <tr key={c.id} className="transition-base hover:bg-muted/30">
                     <td className="px-5 py-3.5">
                       <div className="font-semibold">{c.full_name}</div>
-                      <div className="text-xs text-muted-foreground">{c.income_type ?? "—"}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {c.income_type ?? "—"}
+                        {refreshMap[c.id] && (
+                          <span className="ml-2 text-[10px] text-muted-foreground/70">
+                            · Refreshed {new Date(refreshMap[c.id]).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-5 py-3.5 font-mono text-xs">{c.pan ?? "—"}</td>
                     <td className="px-5 py-3.5">
