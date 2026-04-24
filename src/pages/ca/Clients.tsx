@@ -244,12 +244,12 @@ const ClientsInner = () => {
                       <div className="font-semibold">{c.full_name}</div>
                       <div className="text-xs text-muted-foreground">
                         {c.income_type ?? "—"}
-                        {refreshMap[c.id] && (
-                          <span className="ml-2 text-[10px] text-muted-foreground/70">
-                            · Refreshed {new Date(refreshMap[c.id]).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-                          </span>
-                        )}
                       </div>
+                      {refreshMap[c.id] && (
+                        <div className="mt-0.5 text-[11px] text-muted-foreground">
+                          Report received: {new Date(refreshMap[c.id]).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                        </div>
+                      )}
                     </td>
                     <td className="px-5 py-3.5 font-mono text-xs">{c.pan ?? "—"}</td>
                     <td className="px-5 py-3.5">
