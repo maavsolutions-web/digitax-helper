@@ -272,10 +272,20 @@ const Detail = () => {
                 <Button onClick={generateReport} disabled={analyzing || docs.length === 0} variant="hero" size="sm" className="w-full">
                   {analyzing ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Analyzing…</> : <><Sparkles className="h-3.5 w-3.5" /> {report ? "Regenerate with AI" : "Generate AI report"}</>}
                 </Button>
+                {report && (
+                  <Button onClick={() => setConfirmRefresh(true)} disabled={refreshing || docs.length === 0} variant="outline" size="sm" className="w-full">
+                    {refreshing ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Refreshing…</> : <><RefreshCw className="h-3.5 w-3.5" /> Refresh report now</>}
+                  </Button>
+                )}
                 {report && !report.ca_approved && (
                   <Button onClick={approveReport} variant="outline" size="sm" className="w-full">
                     <CheckCircle2 className="h-3.5 w-3.5" /> Approve & finalize
                   </Button>
+                )}
+                {report?.last_refreshed_at && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Last refreshed {new Date(report.last_refreshed_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                  </p>
                 )}
                 {docs.length === 0 && (
                   <p className="text-[11px] text-muted-foreground">Upload documents first to enable AI analysis.</p>
@@ -344,9 +354,30 @@ const Detail = () => {
             )}
           </div>
 
+          {/* Report history */}
+          <ReportHistoryPanel clientId={client.id} />
+
           {/* Communications */}
           <CommunicationsLog clientId={client.id} clientName={client.full_name} clientPhone={sourcePhone} />
         </div>
+
+        <AlertDialog open={confirmRefresh} onOpenChange={setConfirmRefresh}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Refresh report now?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will regenerate the report using the client's latest uploaded documents.
+                The current report will be saved as a snapshot before refreshing. Continue?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={refreshing}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={refreshNow} disabled={refreshing}>
+                {refreshing ? "Refreshing…" : "Yes, refresh"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </MitraShell>
     </CaGuard>
   );
