@@ -11,6 +11,7 @@ const CaLogin = () => {
   const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
   const [name, setName] = useState("");
   const [firm, setFirm] = useState("");
+  const [membershipNumber, setMembershipNumber] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
