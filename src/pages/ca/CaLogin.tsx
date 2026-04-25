@@ -47,8 +47,13 @@ const CaLogin = () => {
     setLoading(true);
     try {
       if (mode === "signup") {
-        if (!name || !firm) {
-          toast.error("Name and firm are required");
+        if (!name || !firm || !membershipNumber) {
+          toast.error("Name, firm, and ICAI membership number are required");
+          setLoading(false);
+          return;
+        }
+        if (!/^\d{6}$/.test(membershipNumber.trim())) {
+          toast.error("Enter a valid 6-digit ICAI membership number");
           setLoading(false);
           return;
         }
@@ -58,7 +63,7 @@ const CaLogin = () => {
           password,
           options: {
             emailRedirectTo: redirectUrl,
-            data: { full_name: name, firm_name: firm, phone, role: "ca" },
+            data: { full_name: name, firm_name: firm, phone, membership_number: membershipNumber.trim(), role: "ca" },
           },
         });
         if (error) throw error;
