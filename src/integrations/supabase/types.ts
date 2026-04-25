@@ -243,6 +243,7 @@ export type Database = {
           full_name: string | null
           id: string
           income_type: string | null
+          membership_number: string | null
           pan: string | null
           phone: string | null
           referral_slug: string | null
@@ -255,6 +256,7 @@ export type Database = {
           full_name?: string | null
           id: string
           income_type?: string | null
+          membership_number?: string | null
           pan?: string | null
           phone?: string | null
           referral_slug?: string | null
@@ -267,6 +269,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           income_type?: string | null
+          membership_number?: string | null
           pan?: string | null
           phone?: string | null
           referral_slug?: string | null
