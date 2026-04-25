@@ -190,6 +190,9 @@ const Report = () => {
             )}
           </Section>
 
+          {/* Deductions available */}
+          <DeductionsBox totalIncome={totalIncome} />
+
           {/* CTA */}
           <div className="rounded-3xl border border-border bg-gradient-to-br from-accent to-card p-6 shadow-elevated sm:p-8">
             <div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
