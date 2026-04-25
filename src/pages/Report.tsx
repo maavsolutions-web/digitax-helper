@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { DeductionsBox } from "@/components/report/DeductionsBox";
 
 interface Issue {
   title: string;
@@ -188,6 +189,9 @@ const Report = () => {
               </div>
             )}
           </Section>
+
+          {/* Deductions available */}
+          <DeductionsBox totalIncome={totalIncome} />
 
           {/* CTA */}
           <div className="rounded-3xl border border-border bg-gradient-to-br from-accent to-card p-6 shadow-elevated sm:p-8">
