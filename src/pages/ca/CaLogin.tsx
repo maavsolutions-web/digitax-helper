@@ -117,6 +117,15 @@ const CaLogin = () => {
                 <Field label="Firm name">
                   <Input value={firm} onChange={(e) => setFirm(e.target.value)} placeholder="Mehta & Associates" />
                 </Field>
+                <Field label="ICAI membership number">
+                  <Input
+                    value={membershipNumber}
+                    onChange={(e) => setMembershipNumber(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="123456"
+                    inputMode="numeric"
+                    maxLength={6}
+                  />
+                </Field>
                 <Field label="Phone (optional)">
                   <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" />
                 </Field>
