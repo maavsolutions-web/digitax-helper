@@ -134,6 +134,7 @@ export type Database = {
           doc_type: Database["public"]["Enums"]["document_type"]
           file_name: string
           file_path: string | null
+          financial_year: string | null
           id: string
           owner_user_id: string
           size_bytes: number | null
@@ -144,6 +145,7 @@ export type Database = {
           doc_type: Database["public"]["Enums"]["document_type"]
           file_name: string
           file_path?: string | null
+          financial_year?: string | null
           id?: string
           owner_user_id: string
           size_bytes?: number | null
@@ -154,6 +156,7 @@ export type Database = {
           doc_type?: Database["public"]["Enums"]["document_type"]
           file_name?: string
           file_path?: string | null
+          financial_year?: string | null
           id?: string
           owner_user_id?: string
           size_bytes?: number | null
@@ -239,11 +242,13 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          financial_year: string | null
           firm_name: string | null
           full_name: string | null
           id: string
           income_type: string | null
           membership_number: string | null
+          onboarding_completed: boolean
           pan: string | null
           phone: string | null
           referral_slug: string | null
@@ -252,11 +257,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          financial_year?: string | null
           firm_name?: string | null
           full_name?: string | null
           id: string
           income_type?: string | null
           membership_number?: string | null
+          onboarding_completed?: boolean
           pan?: string | null
           phone?: string | null
           referral_slug?: string | null
@@ -265,11 +272,13 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          financial_year?: string | null
           firm_name?: string | null
           full_name?: string | null
           id?: string
           income_type?: string | null
           membership_number?: string | null
+          onboarding_completed?: boolean
           pan?: string | null
           phone?: string | null
           referral_slug?: string | null
