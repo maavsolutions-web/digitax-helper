@@ -41,6 +41,29 @@ const Upload = () => {
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
+  // Hydrate previously uploaded docs for this FY so returning users see ticks
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("documents")
+        .select("id, doc_type, file_name, file_path, financial_year")
+        .eq("owner_user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (!data) return;
+      const next: Record<string, UploadedFile> = {};
+      for (const doc of docs) {
+        const match = data.find(
+          (d) => d.doc_type === doc.dbType && (d.financial_year === DEFAULT_FY || d.financial_year == null)
+        );
+        if (match && !next[doc.id]) {
+          next[doc.id] = { fileName: match.file_name, filePath: match.file_path ?? "", documentId: match.id };
+        }
+      }
+      if (Object.keys(next).length) setUploaded((p) => ({ ...next, ...p }));
+    })();
+  }, [user]);
+
   const progress = useMemo(() => {
     return Math.round((Object.keys(uploaded).length / docs.length) * 100);
   }, [uploaded]);
