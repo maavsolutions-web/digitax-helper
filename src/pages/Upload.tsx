@@ -98,6 +98,7 @@ const Upload = () => {
           file_name: file.name,
           file_path: filePath,
           size_bytes: file.size,
+          financial_year: DEFAULT_FY,
         })
         .select("id")
         .single();
