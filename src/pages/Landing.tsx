@@ -25,12 +25,12 @@ const Landing = () => {
             <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
               Whether you're filing your own return or managing hundreds of clients — MAAV is built for you.
             </p>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-              <Link to="/signup">
-                <Button variant="hero" size="lg">Get Started Free <ArrowRight /></Button>
-              </Link>
+            <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link to="/signup?mode=signin">
                 <Button variant="outline" size="lg">Sign In</Button>
+              </Link>
+              <Link to="/signup">
+                <Button variant="hero" size="lg">Get Started Free <ArrowRight /></Button>
               </Link>
             </div>
           </div>
