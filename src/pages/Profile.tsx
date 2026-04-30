@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,8 @@ import { TopBar } from "@/components/TopBar";
 import { FlowShell, StepHeader } from "@/components/flow/StepHeader";
 import { ArrowRight, Briefcase, User, Wallet } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const incomeOptions = [
   { id: "salary", label: "Salaried", desc: "Form 16 from employer", icon: Wallet },
@@ -15,16 +17,57 @@ const incomeOptions = [
 ] as const;
 
 const Profile = () => {
+  const { user } = useAuth();
   const [name, setName] = useState("");
   const [pan, setPan] = useState("");
   const [income, setIncome] = useState<string>("");
+  const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
 
-  const submit = () => {
+  // Pre-fill from existing profile so returning users see saved data
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, pan, income_type")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (data) {
+        if (data.full_name) setName(data.full_name);
+        if (data.pan) setPan(data.pan);
+        if (data.income_type) setIncome(data.income_type);
+      }
+    })();
+  }, [user]);
+
+  const submit = async () => {
     if (!name.trim()) return toast.error("Enter your name");
     if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)) return toast.error("Enter a valid PAN");
     if (!income) return toast.error("Select your income type");
-    navigate("/upload");
+    if (!user) {
+      toast.error("Please sign in first");
+      navigate("/signup");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .upsert({
+          id: user.id,
+          full_name: name.trim(),
+          pan: pan.toUpperCase(),
+          income_type: income,
+          onboarding_completed: false,
+        }, { onConflict: "id" });
+      if (error) throw error;
+      navigate("/upload");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not save profile");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
