@@ -48,8 +48,16 @@ const Report = () => {
       let q = supabase.from("reports").select("*").order("created_at", { ascending: false }).limit(1);
       if (reportId) q = supabase.from("reports").select("*").eq("id", reportId).limit(1);
       const { data } = await q;
-      setReport(data?.[0] ?? null);
+      const r = data?.[0] ?? null;
+      setReport(r);
       setLoading(false);
+      // Mark onboarding complete once user has a report
+      if (r) {
+        await supabase
+          .from("profiles")
+          .update({ onboarding_completed: true })
+          .eq("id", user.id);
+      }
     })();
   }, [authLoading, user, reportId]);
 
