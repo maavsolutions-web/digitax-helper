@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { TopBar } from "@/components/TopBar";
@@ -7,6 +7,8 @@ import { ArrowRight, Upload as UploadIcon, FileText, Info, Lock, Loader2 } from 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+
+const DEFAULT_FY = "FY 2024-25";
 
 type DocTypeEnum = "form_26as" | "ais" | "form_16" | "investment_proof" | "other";
 
