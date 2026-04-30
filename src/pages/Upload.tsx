@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { TopBar } from "@/components/TopBar";
@@ -7,6 +7,8 @@ import { ArrowRight, Upload as UploadIcon, FileText, Info, Lock, Loader2 } from 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+
+const DEFAULT_FY = "FY 2024-25";
 
 type DocTypeEnum = "form_26as" | "ais" | "form_16" | "investment_proof" | "other";
 
@@ -39,6 +41,29 @@ const Upload = () => {
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
+  // Hydrate previously uploaded docs for this FY so returning users see ticks
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("documents")
+        .select("id, doc_type, file_name, file_path, financial_year")
+        .eq("owner_user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (!data) return;
+      const next: Record<string, UploadedFile> = {};
+      for (const doc of docs) {
+        const match = data.find(
+          (d) => d.doc_type === doc.dbType && (d.financial_year === DEFAULT_FY || d.financial_year == null)
+        );
+        if (match && !next[doc.id]) {
+          next[doc.id] = { fileName: match.file_name, filePath: match.file_path ?? "", documentId: match.id };
+        }
+      }
+      if (Object.keys(next).length) setUploaded((p) => ({ ...next, ...p }));
+    })();
+  }, [user]);
+
   const progress = useMemo(() => {
     return Math.round((Object.keys(uploaded).length / docs.length) * 100);
   }, [uploaded]);
@@ -58,7 +83,7 @@ const Upload = () => {
     setBusy((b) => ({ ...b, [doc.id]: true }));
     try {
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const filePath = `${user.id}/_inbox/${doc.dbType}-${Date.now()}-${safeName}`;
+      const filePath = `${user.id}/${DEFAULT_FY}/${doc.dbType}-${Date.now()}-${safeName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("tax-docs")
@@ -73,6 +98,7 @@ const Upload = () => {
           file_name: file.name,
           file_path: filePath,
           size_bytes: file.size,
+          financial_year: DEFAULT_FY,
         })
         .select("id")
         .single();

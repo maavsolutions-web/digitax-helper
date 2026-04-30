@@ -48,8 +48,16 @@ const Report = () => {
       let q = supabase.from("reports").select("*").order("created_at", { ascending: false }).limit(1);
       if (reportId) q = supabase.from("reports").select("*").eq("id", reportId).limit(1);
       const { data } = await q;
-      setReport(data?.[0] ?? null);
+      const r = data?.[0] ?? null;
+      setReport(r);
       setLoading(false);
+      // Mark onboarding complete once user has a report
+      if (r) {
+        await supabase
+          .from("profiles")
+          .update({ onboarding_completed: true })
+          .eq("id", user.id);
+      }
     })();
   }, [authLoading, user, reportId]);
 
@@ -114,6 +122,20 @@ const Report = () => {
             <Button variant="outline" size="sm" disabled>
               <Download className="h-4 w-4" /> Download PDF
             </Button>
+          </div>
+
+          {/* Refresh banner */}
+          <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-border bg-accent/40 p-4 sm:flex-row sm:items-center">
+            <div className="text-sm">
+              <span className="font-semibold text-foreground">Last updated:</span>{" "}
+              <span className="text-muted-foreground">
+                {new Date(report.last_refreshed_at ?? report.created_at).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+              </span>
+              <span className="ml-2 text-xs text-muted-foreground">— Upload new documents to refresh your report</span>
+            </div>
+            <Link to="/upload">
+              <Button variant="outline" size="sm">Refresh report <ArrowRight className="h-4 w-4" /></Button>
+            </Link>
           </div>
 
           {/* Top: Score + Tax Summary */}
