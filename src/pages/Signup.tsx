@@ -1,34 +1,85 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Label } from "@/components/ui/label";
 import { TopBar } from "@/components/TopBar";
-import { MaavLogo } from "@/components/MaavLogo";
-import { ArrowLeft, ArrowRight, Phone, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mail, LogIn } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Signup = () => {
-  const [step, setStep] = useState<"phone" | "otp">("phone");
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
+  const [params] = useSearchParams();
+  const initialMode = params.get("mode") === "signin" ? "signin" : "signup";
+  const [mode, setMode] = useState<"signup" | "signin">(initialMode);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
 
-  const sendOtp = () => {
-    if (phone.length !== 10) {
-      toast.error("Enter a valid 10-digit mobile number");
+  const routeAfterAuth = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_completed, financial_year, full_name, pan")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (profile?.onboarding_completed) {
+      // Returning user with completed report → straight to report
+      navigate("/report");
       return;
     }
-    toast.success("OTP sent to +91 " + phone);
-    setStep("otp");
+    // Resume from where they dropped off
+    if (profile?.full_name && profile?.pan) {
+      navigate("/upload");
+    } else {
+      navigate("/profile");
+    }
   };
 
-  const verify = () => {
-    if (otp.length !== 6) {
-      toast.error("Enter the 6-digit OTP");
+  const submit = async () => {
+    if (!email.trim() || !password) {
+      toast.error("Enter email and password");
       return;
     }
-    navigate("/profile");
+    if (mode === "signup" && password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    setBusy(true);
+    try {
+      if (mode === "signup") {
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/profile`,
+            data: { role: "individual" },
+          },
+        });
+        if (error) throw error;
+        if (data.session && data.user) {
+          toast.success("Account created");
+          navigate("/profile");
+        } else {
+          toast.success("Check your email to verify your account");
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (error) throw error;
+        if (data.user) {
+          toast.success("Welcome back");
+          await routeAfterAuth(data.user.id);
+        }
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? "Authentication failed");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -37,76 +88,67 @@ const Signup = () => {
       <main className="container max-w-md py-10 sm:py-16">
         <div className="rounded-3xl border border-border bg-card p-7 shadow-card sm:p-9 animate-fade-in">
           <div className="mb-6 grid h-12 w-12 place-items-center rounded-2xl bg-accent text-accent-foreground">
-            {step === "phone" ? <Phone className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}
+            {mode === "signup" ? <Mail className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
           </div>
 
-          {step === "phone" ? (
-            <>
-              <h1 className="font-display text-2xl font-bold tracking-tight">Sign in with mobile</h1>
-              <p className="mt-1.5 text-sm text-muted-foreground">We'll send a 6-digit OTP. No passwords.</p>
+          <h1 className="font-display text-2xl font-bold tracking-tight">
+            {mode === "signup" ? "Create your account" : "Welcome back"}
+          </h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            {mode === "signup"
+              ? "We'll save your progress so you can pick up where you left off."
+              : "Sign in to view your latest Tax Health Report."}
+          </p>
 
-              <label className="mt-7 block text-xs font-medium text-muted-foreground">Mobile number</label>
-              <div className="mt-2 flex items-center gap-2 rounded-xl border border-input bg-background pl-3.5 focus-within:ring-2 focus-within:ring-ring">
-                <span className="text-sm font-medium text-muted-foreground">+91</span>
-                <Input
-                  type="tel"
-                  inputMode="numeric"
-                  maxLength={10}
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-                  placeholder="98765 43210"
-                  className="border-0 bg-transparent text-base tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-              </div>
+          <div className="mt-7 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-xs font-medium text-muted-foreground">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="h-11"
+                autoComplete="email"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-xs font-medium text-muted-foreground">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="h-11"
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                onKeyDown={(e) => e.key === "Enter" && submit()}
+              />
+            </div>
+          </div>
 
-              <Button onClick={sendOtp} variant="hero" size="lg" className="mt-6 w-full">
-                Send OTP <ArrowRight />
-              </Button>
+          <Button onClick={submit} variant="hero" size="lg" className="mt-6 w-full" disabled={busy}>
+            {busy ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"} <ArrowRight />
+          </Button>
 
-              <p className="mt-5 text-center text-xs text-muted-foreground">
-                By continuing, you agree to our Terms & Privacy Policy.
-              </p>
-            </>
-          ) : (
-            <>
-              <h1 className="font-display text-2xl font-bold tracking-tight">Enter OTP</h1>
-              <p className="mt-1.5 text-sm text-muted-foreground">
-                Sent to +91 {phone}.{" "}
-                <button onClick={() => setStep("phone")} className="font-medium text-primary hover:underline">
-                  Change
-                </button>
-              </p>
-
-              <div className="mt-7 flex justify-center">
-                <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                  <InputOTPGroup>
-                    {[0, 1, 2, 3, 4, 5].map((i) => (
-                      <InputOTPSlot key={i} index={i} className="h-12 w-12 text-lg" />
-                    ))}
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-
-              <Button onClick={verify} variant="hero" size="lg" className="mt-7 w-full">
-                Verify & Continue <ArrowRight />
-              </Button>
-
-              <button
-                onClick={() => toast.success("OTP resent")}
-                className="mt-4 block w-full text-center text-xs text-muted-foreground hover:text-foreground"
-              >
-                Didn't receive it? <span className="font-medium text-primary">Resend</span>
-              </button>
-            </>
-          )}
+          <p className="mt-5 text-center text-xs text-muted-foreground">
+            {mode === "signup" ? "Already have an account? " : "New to MAAV? "}
+            <button
+              onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+              className="font-medium text-primary hover:underline"
+            >
+              {mode === "signup" ? "Sign in" : "Create one"}
+            </button>
+          </p>
         </div>
 
-        <button
-          onClick={() => navigate("/")}
+        <Link
+          to="/"
           className="mt-6 inline-flex items-center gap-1.5 px-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" /> Back to home
-        </button>
+        </Link>
       </main>
     </div>
   );
