@@ -83,7 +83,7 @@ const Upload = () => {
     setBusy((b) => ({ ...b, [doc.id]: true }));
     try {
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const filePath = `${user.id}/_inbox/${doc.dbType}-${Date.now()}-${safeName}`;
+      const filePath = `${user.id}/${DEFAULT_FY}/${doc.dbType}-${Date.now()}-${safeName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("tax-docs")
