@@ -124,6 +124,20 @@ const Report = () => {
             </Button>
           </div>
 
+          {/* Refresh banner */}
+          <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-border bg-accent/40 p-4 sm:flex-row sm:items-center">
+            <div className="text-sm">
+              <span className="font-semibold text-foreground">Last updated:</span>{" "}
+              <span className="text-muted-foreground">
+                {new Date(report.last_refreshed_at ?? report.created_at).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+              </span>
+              <span className="ml-2 text-xs text-muted-foreground">— Upload new documents to refresh your report</span>
+            </div>
+            <Link to="/upload">
+              <Button variant="outline" size="sm">Refresh report <ArrowRight className="h-4 w-4" /></Button>
+            </Link>
+          </div>
+
           {/* Top: Score + Tax Summary */}
           <div className="grid gap-5 lg:grid-cols-3">
             <div className="rounded-3xl border border-border bg-card p-6 shadow-card lg:col-span-1">
