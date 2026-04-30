@@ -127,7 +127,7 @@ const Profile = () => {
             </div>
           </div>
 
-          <Button onClick={submit} variant="hero" size="lg" className="w-full">
+          <Button onClick={submit} variant="hero" size="lg" className="w-full" disabled={busy}>
             Continue <ArrowRight />
           </Button>
         </div>
